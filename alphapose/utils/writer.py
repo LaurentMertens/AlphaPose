@@ -92,7 +92,7 @@ class DataWriter():
                 self.video_save_opt['savepath'] = self.video_save_opt['savepath'][:-4] + _ext
                 stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
             assert stream.isOpened(), 'Cannot open video for writing'
-        # keep looping infinitelyd
+        # keep looping infinitely
         while True:
             # ensure the queue is not empty and get item
             (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.wait_and_get(self.result_queue)
@@ -114,16 +114,16 @@ class DataWriter():
 
                 face_hand_num = 110
                 if hm_data.size()[1] == 136:
-                    self.eval_joints = [*range(0,136)]
+                    self.eval_joints = [*range(0, 136)]
                 elif hm_data.size()[1] == 26:
-                    self.eval_joints = [*range(0,26)]
+                    self.eval_joints = [*range(0, 26)]
                 elif hm_data.size()[1] == 133:
-                    self.eval_joints = [*range(0,133)]
+                    self.eval_joints = [*range(0, 133)]
                 elif hm_data.size()[1] == 68:
                     face_hand_num = 42
-                    self.eval_joints = [*range(0,68)]
+                    self.eval_joints = [*range(0, 68)]
                 elif hm_data.size()[1] == 21:
-                    self.eval_joints = [*range(0,21)]
+                    self.eval_joints = [*range(0, 21)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
@@ -136,7 +136,8 @@ class DataWriter():
                         pose_coord = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
                         pose_score = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
                     else:
-                        pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
+                        pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size,
+                                                                       norm_type=norm_type)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
@@ -149,11 +150,11 @@ class DataWriter():
                 for k in range(len(scores)):
                     _result.append(
                         {
-                            'keypoints':preds_img[k],
-                            'kp_score':preds_scores[k],
+                            'keypoints': preds_img[k],
+                            'kp_score': preds_scores[k],
                             'proposal_score': torch.mean(preds_scores[k]) + scores[k] + 1.25 * max(preds_scores[k]),
-                            'idx':ids[k],
-                            'box':[boxes[k][0], boxes[k][1], boxes[k][2]-boxes[k][0],boxes[k][3]-boxes[k][1]] 
+                            'idx': ids[k],
+                            'box': [boxes[k][0], boxes[k][1], boxes[k][2] - boxes[k][0], boxes[k][3] - boxes[k][1]]
                         }
                     )
 
@@ -161,7 +162,6 @@ class DataWriter():
                     'imgname': im_name,
                     'result': _result
                 }
-
 
                 if self.opt.pose_flow:
                     poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
@@ -184,7 +184,11 @@ class DataWriter():
             cv2.imshow("AlphaPose Demo", img)
             cv2.waitKey(30)
         if self.opt.save_img:
-            cv2.imwrite(os.path.join(self.opt.outputpath, 'vis', im_name), img)
+            out_file = os.path.join(self.opt.outputpath, 'vis', *im_name.split(os.pathsep))
+            out_path = os.path.dirname(out_file)
+            os.makedirs(out_path, exist_ok=True)
+            if not cv2.imwrite(out_file, img):
+                print(f"! Image could not be saved: {out_file}")
         if self.save_video:
             stream.write(img)
 
@@ -217,7 +221,7 @@ class DataWriter():
 
     def clear_queues(self):
         self.clear(self.result_queue)
-        
+
     def clear(self, queue):
         while not queue.empty():
             queue.get()

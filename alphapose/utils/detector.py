@@ -12,6 +12,7 @@ import torch.multiprocessing as mp
 from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
 from alphapose.models import builder
 
+
 class DetectionLoader():
     def __init__(self, input_source, detector, cfg, opt, mode='image', batchSize=1, queueSize=128):
         self.cfg = cfg
@@ -21,7 +22,11 @@ class DetectionLoader():
 
         if mode == 'image':
             self.img_dir = opt.inputpath
-            self.imglist = [os.path.join(self.img_dir, im_name.rstrip('\n').rstrip('\r')) for im_name in input_source]
+            # Next is the original line
+            # self.imglist = [os.path.join(self.img_dir, im_name.rstrip('\n').rstrip('\r')) for im_name in input_source]
+            # We replace this with a version compatible with our recursive change to demo_inference.py, lines 139+
+            print("input_source")
+            self.imglist = [os.path.join(self.img_dir, *im_name.split(os.pathsep)) for im_name in input_source]
             self.datalen = len(input_source)
         elif mode == 'video':
             stream = cv2.VideoCapture(input_source)
@@ -164,7 +169,10 @@ class DetectionLoader():
 
                 imgs.append(img_k)
                 orig_imgs.append(orig_img_k)
-                im_names.append(os.path.basename(im_name_k))
+                if self.img_dir is not None:
+                    im_names.append(im_name_k.replace(self.img_dir, ''))
+                else:
+                    im_names.append(os.path.basename(im_name_k))
                 im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():

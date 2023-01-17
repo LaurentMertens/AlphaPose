@@ -165,7 +165,8 @@ def get_install_requires():
         'tqdm', 'tensorboardx', 'easydict',
         'pyyaml', 'halpecocotools',
         'torch>=1.1.0', 'torchvision>=0.3.0',
-        'munkres', 'timm==0.1.20', 'natsort'
+        'munkres', 'timm==0.1.20', 'natsort',
+        'opendr'
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':
@@ -174,9 +175,16 @@ def get_install_requires():
 
 
 def is_installed(package_name):
-    #from pip._internal.utils.misc import get_installed_distributions
+    # Original code has it like this (next two lines), but this doesn't work anymore (pip >20?)
+    # from pip._internal.utils.misc import get_installed_distributions
+    # for p in get_installed_distributions():
+
     import pkg_resources
-    for p in pkg_resources.working_set:
+
+    dists = [d for d in pkg_resources.working_set]
+    # Filter out distributions you don't care about and use.
+
+    for p in dists:
         if package_name in p.egg_name():
             return True
     return False
@@ -221,3 +229,4 @@ if __name__ == '__main__':
         print("\nInstall `cython_bbox`...")
         cmd = 'python -m pip install git+https://github.com/yanfengliu/cython_bbox.git'
         os.system(cmd)
+    print("Install successful...?")

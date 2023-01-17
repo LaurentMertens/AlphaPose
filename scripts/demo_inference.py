@@ -23,6 +23,11 @@ from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
 from alphapose.utils.writer import DataWriter
 
+
+# Define valid image extensions
+valid_exts = {'.jpg', '.jpeg', '.png'}
+
+
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
 parser.add_argument('--cfg', type=str, required=True,
@@ -132,8 +137,22 @@ def check_input():
         if len(inputlist):
             im_names = open(inputlist, 'r').readlines()
         elif len(inputpath) and inputpath != '/':
-            for root, dirs, files in os.walk(inputpath):
-                im_names = files
+            # Next 2 lines are the original code, which we will replace with a recursive variant
+            # for root, dirs, files in os.walk(inputpath):
+            #     im_names = files
+            def _parse_dir(_dir):
+                images = []
+                for e in os.listdir(_dir):
+                    full_path = os.path.join(_dir, e)
+                    if os.path.isdir(full_path):
+                        images += _parse_dir(full_path)
+                    else:
+                        if os.path.splitext(e)[1].lower() in valid_exts:
+                            images.append(full_path.replace(inputpath, ''))
+
+                return images
+
+            im_names = _parse_dir(inputpath)
             im_names = natsort.natsorted(im_names)
         elif len(inputimg):
             args.inputpath = os.path.split(inputimg)[0]
