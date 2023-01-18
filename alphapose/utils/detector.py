@@ -158,7 +158,12 @@ class DetectionLoader():
                 im_name_k = self.imglist[k]
 
                 # expected image shape like (1,3,h,w) or (3,h,w)
-                img_k = self.detector.image_preprocess(im_name_k)
+                try:
+                    img_k = self.detector.image_preprocess(im_name_k)
+                except AttributeError as e:
+                    print(f"Couldn't parse {im_name_k}")
+                    print(f"Error message: {e}")
+                    continue
                 if isinstance(img_k, np.ndarray):
                     img_k = torch.from_numpy(img_k)
                 # add one dimension at the front for batch if image shape (3,h,w)
@@ -175,13 +180,17 @@ class DetectionLoader():
                     im_names.append(os.path.basename(im_name_k))
                 im_dim_list.append(im_dim_list_k)
 
-            with torch.no_grad():
-                # Human Detection
-                imgs = torch.cat(imgs)
-                im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
+            if imgs:
+                with torch.no_grad():
+                    # Human Detection
+                    imgs = torch.cat(imgs)
+                    im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
                 # im_dim_list_ = im_dim_list
 
-            self.wait_and_put(self.image_queue, (imgs, orig_imgs, im_names, im_dim_list))
+                self.wait_and_put(self.image_queue, (imgs, orig_imgs, im_names, im_dim_list))
+            else:
+                print("No images to parse; skipping batch.")
+                return
 
     def frame_preprocess(self):
         stream = cv2.VideoCapture(self.path)
@@ -238,6 +247,7 @@ class DetectionLoader():
     def image_detection(self):
         for i in range(self.num_batches):
             imgs, orig_imgs, im_names, im_dim_list = self.wait_and_get(self.image_queue)
+            print(f"Processing {im_names}")
             if imgs is None or self.stopped:
                 self.wait_and_put(self.det_queue, (None, None, None, None, None, None, None))
                 return
