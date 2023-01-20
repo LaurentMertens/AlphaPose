@@ -243,7 +243,10 @@ if __name__ == "__main__":
         for i in im_names_desc:
             start_time = getTime()
             with torch.no_grad():
-                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.read()
+                tpl = det_loader.read()
+                if tpl is None:
+                    continue
+                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = tpl
                 if orig_img is None:
                     break
                 if boxes is None or boxes.nelement() == 0:
@@ -287,6 +290,7 @@ if __name__ == "__main__":
                     'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
                         dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
                 )
+
         print_finish_info()
         while(writer.running()):
             time.sleep(1)
