@@ -317,4 +317,3 @@ if __name__ == "__main__":
             writer.terminate()
             writer.clear_queues()
             det_loader.clear_queues()
-

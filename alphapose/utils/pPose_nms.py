@@ -671,7 +671,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False, outputfile='a
             if for_eval:
                 result['image_id'] = int(os.path.basename(im_name).split('.')[0].split('_')[-1])
             else:
-                result['image_id'] = os.path.basename(im_name)
+                result['image_id'] = im_name  # os.path.basename(im_name)
             result['category_id'] = 1
 
             kp_preds = human['keypoints']
