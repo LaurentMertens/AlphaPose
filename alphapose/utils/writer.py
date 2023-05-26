@@ -63,6 +63,10 @@ class DataWriter():
 
         self.use_heatmap_loss = (self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss') == 'MSELoss')
 
+        if opt.only_lines:
+            print("Saving pose lines on black background.")
+            self.b_only_lines = True
+
     def start_worker(self, target):
         if self.opt.sp:
             p = Thread(target=target, args=())
@@ -104,7 +108,10 @@ class DataWriter():
                 print("Results have been written to json.")
                 return
             # image channel RGB->BGR
-            orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
+            if self.b_only_lines:
+                orig_img = np.zeros(orig_img.shape, dtype=np.uint8)
+            else:
+                orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
             if boxes is None or len(boxes) == 0:
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     self.write_image(orig_img, im_name, stream=stream if self.save_video else None)

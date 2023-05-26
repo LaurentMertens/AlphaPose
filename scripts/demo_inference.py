@@ -52,6 +52,8 @@ parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
+parser.add_argument('--only_lines', default=False, action='store_true',
+                    help='save only pose lines on black background, instead of over original image')
 parser.add_argument('--showbox', default=False, action='store_true',
                     help='visualize human bbox')
 parser.add_argument('--profile', default=False, action='store_true',
