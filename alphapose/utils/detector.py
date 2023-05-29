@@ -26,7 +26,7 @@ class DetectionLoader():
             # self.imglist = [os.path.join(self.img_dir, im_name.rstrip('\n').rstrip('\r')) for im_name in input_source]
             # We replace this with a version compatible with our recursive change to demo_inference.py, lines 139+
             print("input_source")
-            self.imglist = [os.path.join(self.img_dir, *im_name.split(os.pathsep)) for im_name in input_source]
+            self.imglist = [os.path.join(self.img_dir, *im_name.split(os.sep)) for im_name in input_source]
             self.datalen = len(input_source)
         elif mode == 'video':
             stream = cv2.VideoCapture(input_source)
@@ -141,6 +141,8 @@ class DetectionLoader():
 
     def wait_and_put(self, queue, item, name="default"):
         # print(f"{name} wait_and_put line 143")
+        # if name == "image":
+        #     print(f"\t{item[2]}")
         # print(f"{name} queue size: {queue.qsize()}")
         queue.put(item)
 
@@ -156,6 +158,12 @@ class DetectionLoader():
             im_names = []
             im_dim_list = []
             for k in range(i * self.batchSize, min((i + 1) * self.batchSize, self.datalen)):
+                # while self.image_queue.qsize() > 50:
+                #     Empty queue first
+                #     print("Emptying queue...")
+                #     while self.image_queue.qsize() > 5:
+                #         pass
+
                 if self.stopped:
                     self.wait_and_put(self.image_queue, (None, None, None, None), "image")
                     return

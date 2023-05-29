@@ -191,7 +191,7 @@ class DataWriter():
             cv2.imshow("AlphaPose Demo", img)
             cv2.waitKey(30)
         if self.opt.save_img:
-            out_file = os.path.join(self.opt.outputpath, 'vis', *im_name.split(os.pathsep))
+            out_file = os.path.join(self.opt.outputpath, 'vis', *im_name.split(os.sep))
             out_path = os.path.dirname(out_file)
             os.makedirs(out_path, exist_ok=True)
             if not cv2.imwrite(out_file, img):
